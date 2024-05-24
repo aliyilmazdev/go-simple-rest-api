@@ -6,7 +6,7 @@ type Repository interface {
 	getAll() ([]Product, error)
 	getByID(id int) (Product, error)
 	create(product Product) (Product, error)
-	update(product Product) (Product, error)
+	update(product *Product, updateProductRequest UpdateProductRequest) error
 	delete(id int) error
 }
 
@@ -28,10 +28,8 @@ func (r *repository) getAll() ([]Product, error) {
 
 func (r *repository) getByID(id int) (Product, error) {
 	var product Product
-	if err := r.db.First(&product, id).Error; err != nil {
-		return Product{}, err
-	}
-	return product, nil
+	result := r.db.First(&product, id)
+	return product, result.Error
 }
 
 func (r *repository) create(product Product) (Product, error) {
@@ -41,12 +39,9 @@ func (r *repository) create(product Product) (Product, error) {
 	return product, nil
 }
 
-func (r *repository) update(product Product) (Product, error) {
-
-	if err := r.db.Save(&product).Error; err != nil {
-		return Product{}, err
-	}
-	return product, nil
+func (r *repository) update(product *Product, updateProductRequest UpdateProductRequest) error {
+	result := r.db.Model(&product).Updates(updateProductRequest)
+	return result.Error
 }
 
 func (r *repository) delete(id int) error {

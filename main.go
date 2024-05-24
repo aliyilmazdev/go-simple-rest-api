@@ -6,6 +6,7 @@ import (
 	"github.com/aliyilmazdev/go-simple-rest-api/internal/product"
 	"github.com/aliyilmazdev/go-simple-rest-api/pkg/database"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -16,6 +17,10 @@ func main() {
 	}
 	app := fiber.New()
 	db := database.Connect()
+
+	app.Use(cors.New(cors.Config{
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
 
 	productRepository := product.NewRepository(db)
 	productService := product.NewService(productRepository)

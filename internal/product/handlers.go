@@ -1,6 +1,9 @@
 package product
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/aliyilmazdev/go-simple-rest-api/pkg/presenter"
 	"github.com/gofiber/fiber/v2"
 )
@@ -45,10 +48,20 @@ func CreateHandler(service Service) fiber.Handler {
 func UpdateHandler(service Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var updateProductRequest UpdateProductRequest
+		id := c.Params("id")
+
+		   if id == "" {
+            return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse(fmt.Errorf("id parameter is missing")))
+        }
+		
+		idUint, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse(err))
+		}
 		if err := c.BodyParser(&updateProductRequest); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(presenter.ErrorResponse(err))
 		}
-		if err := service.update(updateProductRequest); err != nil {
+		if err := service.update(uint(idUint), updateProductRequest); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(presenter.ErrorResponse(err))
 		}
 		return c.JSON(presenter.SuccessResponse(nil))

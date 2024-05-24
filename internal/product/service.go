@@ -1,10 +1,10 @@
 package product
 
 type Service interface {
-	getAll() ([]GetAllProductResponse, error)
-	getByID(id int) (GetAllProductResponse, error)
+	getAll() ([]ProductResponse, error)
+	getByID(id int) (*Product, error)
 	create(product CreateProductRequest) error
-	update(product UpdateProductRequest) error
+	update(id uint, updateProductRequest UpdateProductRequest) error
 	delete(id int) error
 }
 
@@ -16,14 +16,14 @@ func NewService(repository Repository) Service {
 	return &service{repository}
 }
 
-func (s *service) getAll() ([]GetAllProductResponse, error) {
+func (s *service) getAll() ([]ProductResponse, error) {
 	products, err := s.repository.getAll()
 	if err != nil {
 		return nil, err
 	}
-	var productResponses []GetAllProductResponse
+	var productResponses []ProductResponse
 	for _, product := range products {
-		productResponses = append(productResponses, GetAllProductResponse{
+		productResponses = append(productResponses, ProductResponse{
 			Id:    product.ID,
 			Name:  product.Name,
 			Price: product.Price,
@@ -32,16 +32,13 @@ func (s *service) getAll() ([]GetAllProductResponse, error) {
 	return productResponses, nil
 }
 
-func (s *service) getByID(id int) (GetAllProductResponse, error) {
+func (s *service) getByID(id int) (*Product, error) {
 	product, err := s.repository.getByID(id)
 	if err != nil {
-		return GetAllProductResponse{}, err
+		return nil, err
 	}
-	return GetAllProductResponse{
-		Id:    product.ID,
-		Name:  product.Name,
-		Price: product.Price,
-	}, nil
+
+	return &product, nil
 }
 
 func (s *service) create(product CreateProductRequest) error {
@@ -56,16 +53,13 @@ func (s *service) create(product CreateProductRequest) error {
 	return nil
 }
 
-func (s *service) update(product UpdateProductRequest) error {
-	productModel := Product{
-		Name:  product.Name,
-		Price: product.Price,
-	}
-	_, err := s.repository.update(productModel)
+func (s *service) update(id uint, product UpdateProductRequest) error {
+	prod, err := s.getByID(int(id))
 	if err != nil {
 		return err
 	}
-	return nil
+	
+	return s.repository.update(prod, product)
 }
 
 func (s *service) delete(id int) error {

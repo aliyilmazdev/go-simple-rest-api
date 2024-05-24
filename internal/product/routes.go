@@ -15,7 +15,7 @@ func CreateRouter(app fiber.Router, service Service) {
 }
 
 func UpdateRouter(app fiber.Router, service Service) {
-	app.Put("/products", UpdateHandler(service))
+	app.Put("/products/:id", UpdateHandler(service))
 }
 
 func DeleteRouter(app fiber.Router, service Service) {
